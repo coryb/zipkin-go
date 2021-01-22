@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -46,15 +47,22 @@ type SpanContext struct {
 // export data to a Zipkin server using the Zipkin V2 Span model.
 type SpanModel struct {
 	SpanContext
-	Name           string            `json:"name,omitempty"`
-	Kind           Kind              `json:"kind,omitempty"`
-	Timestamp      time.Time         `json:"-"`
-	Duration       time.Duration     `json:"-"`
-	Shared         bool              `json:"shared,omitempty"`
-	LocalEndpoint  *Endpoint         `json:"localEndpoint,omitempty"`
-	RemoteEndpoint *Endpoint         `json:"remoteEndpoint,omitempty"`
-	Annotations    []Annotation      `json:"annotations,omitempty"`
-	Tags           map[string]string `json:"tags,omitempty"`
+	Name           string        `json:"name,omitempty"`
+	Kind           Kind          `json:"kind,omitempty"`
+	Timestamp      time.Time     `json:"-"`
+	Duration       time.Duration `json:"-"`
+	Shared         bool          `json:"shared,omitempty"`
+	LocalEndpoint  *Endpoint     `json:"localEndpoint,omitempty"`
+	RemoteEndpoint *Endpoint     `json:"remoteEndpoint,omitempty"`
+	Annotations    []Annotation  `json:"annotations,omitempty"`
+	tags           *SpanTags
+}
+
+func (s *SpanModel) Tags() *SpanTags {
+	if s.tags == nil {
+		s.tags = &SpanTags{}
+	}
+	return s.tags
 }
 
 // MarshalJSON exports our Model into the correct format for the Zipkin V2 API.
@@ -102,10 +110,12 @@ func (s SpanModel) MarshalJSON() ([]byte, error) {
 		T int64 `json:"timestamp,omitempty"`
 		D int64 `json:"duration,omitempty"`
 		Alias
+		Tags map[string]string `json:"tags,omitempty"`
 	}{
 		T:     timestamp,
 		D:     s.Duration.Nanoseconds() / 1e3,
 		Alias: (Alias)(s),
+		Tags:  s.Tags().ToMap(),
 	})
 }
 
@@ -117,12 +127,14 @@ func (s *SpanModel) UnmarshalJSON(b []byte) error {
 		T uint64 `json:"timestamp,omitempty"`
 		D uint64 `json:"duration,omitempty"`
 		*Alias
+		Tags map[string]string `json:"tags,omitempty"`
 	}{
 		Alias: (*Alias)(s),
 	}
 	if err := json.Unmarshal(b, &span); err != nil {
 		return err
 	}
+	s.tags = NewSpanTags(span.Tags)
 	if s.ID < 1 {
 		return ErrValidIDRequired
 	}
@@ -138,4 +150,47 @@ func (s *SpanModel) UnmarshalJSON(b []byte) error {
 		s.RemoteEndpoint = nil
 	}
 	return nil
+}
+
+type SpanTags struct {
+	sm sync.Map
+}
+
+func NewSpanTags(m map[string]string) *SpanTags {
+	s := &SpanTags{}
+	s.SetMap(m)
+	return s
+}
+
+func (s *SpanTags) Set(k, v string) {
+	s.sm.Store(k, v)
+}
+
+func (s *SpanTags) SetMap(m map[string]string) {
+	for k, v := range m {
+		s.sm.Store(k, v)
+	}
+}
+
+func (s *SpanTags) Get(k string) string {
+	if v, ok := s.sm.Load(k); ok {
+		return v.(string)
+	}
+	return ""
+}
+
+func (s *SpanTags) Load(k string) (string, bool) {
+	if v, ok := s.sm.Load(k); ok {
+		return v.(string), ok
+	}
+	return "", false
+}
+
+func (s *SpanTags) ToMap() map[string]string {
+	tmpMap := make(map[string]string)
+	s.sm.Range(func(k, v interface{}) bool {
+		tmpMap[k.(string)] = v.(string)
+		return true
+	})
+	return tmpMap
 }

@@ -123,32 +123,32 @@ func TestHTTPHandlerWrapping(t *testing.T) {
 		}
 
 		if c.hasRequestSize {
-			if want, have := strconv.Itoa(c.requestBody.Len()), span.Tags["http.request.size"]; want != have {
+			if want, have := strconv.Itoa(c.requestBody.Len()), span.Tags().Get("http.request.size"); want != have {
 				t.Errorf("Expected span request size %s, got %s", want, have)
 			}
 		} else {
 			// http.request.size should not be present as request body is empty.
-			if _, ok := span.Tags["http.request.size"]; ok {
+			if _, ok := span.Tags().Load("http.request.size"); ok {
 				t.Errorf("Unexpected span request size")
 			}
 		}
 
 		if c.hasResponseSize {
-			if want, have := strconv.Itoa(c.responseBody.Len()), span.Tags["http.response.size"]; want != have {
+			if want, have := strconv.Itoa(c.responseBody.Len()), span.Tags().Get("http.response.size"); want != have {
 				t.Errorf("Expected span response size %s, got %s", want, have)
 			}
 		} else {
 			// http.response.size should not be present as request body is empty.
-			if _, ok := span.Tags["http.response.size"]; ok {
+			if _, ok := span.Tags().Load("http.response.size"); ok {
 				t.Errorf("Unexpected span response size")
 			}
 		}
 
-		if want, have := strconv.Itoa(code), span.Tags["http.status_code"]; want != have {
+		if want, have := strconv.Itoa(code), span.Tags().Get("http.status_code"); want != have {
 			t.Errorf("Expected span status code %s, got %s", want, have)
 		}
 
-		if want, have := strconv.Itoa(code), span.Tags["error"]; want != have {
+		if want, have := strconv.Itoa(code), span.Tags().Get("error"); want != have {
 			t.Errorf("Expected span error %q, got %q", want, have)
 		}
 
@@ -205,7 +205,7 @@ func TestHTTPDefaultSpanName(t *testing.T) {
 		t.Errorf("Expected span name %s, got %s", want, have)
 	}
 
-	if want, have := code, span.Tags["http.status_code"]; want != have {
+	if want, have := code, span.Tags().Get("http.status_code"); want != have {
 		t.Errorf("Expected span status code %s, got %s", want, have)
 	}
 }

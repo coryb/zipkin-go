@@ -66,13 +66,13 @@ func (s *spanImpl) Tag(key, value string) {
 	s.mtx.Lock()
 
 	if key == string(TagError) {
-		if _, found := s.Tags[key]; found {
+		if _, found := s.Tags().Load(key); found {
 			s.mtx.Unlock()
 			return
 		}
 	}
 
-	s.Tags[key] = value
+	s.Tags().Set(key, value)
 	s.mtx.Unlock()
 }
 

@@ -86,13 +86,13 @@ func protoSpanToModelSpan(s *Span, debugWasSet bool) (*zipkinmodel.SpanModel, er
 		Name:           s.Name,
 		Kind:           zipkinmodel.Kind(s.Kind.String()),
 		Timestamp:      microsToTime(s.Timestamp),
-		Tags:           s.Tags,
 		Duration:       microsToDuration(s.Duration),
 		LocalEndpoint:  protoEndpointToModelEndpoint(s.LocalEndpoint),
 		RemoteEndpoint: protoEndpointToModelEndpoint(s.RemoteEndpoint),
 		Shared:         s.Shared,
 		Annotations:    protoAnnotationsToModelAnnotations(s.Annotations),
 	}
+	zms.Tags().SetMap(s.Tags)
 
 	return zms, nil
 }

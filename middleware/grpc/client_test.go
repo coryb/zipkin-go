@@ -73,7 +73,7 @@ var _ = ginkgo.Describe("gRPC Client", func() {
 			gomega.Expect(span.Kind).To(gomega.Equal(model.Client))
 			gomega.Expect(span.Name).To(gomega.Equal("zipkin.testing.HelloService.Hello"))
 			gomega.Expect(span.RemoteEndpoint).To(gomega.BeNil())
-			gomega.Expect(span.Tags).To(gomega.BeEmpty())
+			gomega.Expect(span.Tags().ToMap()).To(gomega.BeEmpty())
 		})
 
 		ginkgo.It("propagates trace context", func() {
@@ -97,9 +97,9 @@ var _ = ginkgo.Describe("gRPC Client", func() {
 
 			spans := reporter.Flush()
 			gomega.Expect(spans).To(gomega.HaveLen(1))
-			gomega.Expect(spans[0].Tags).To(gomega.HaveLen(2))
-			gomega.Expect(spans[0].Tags).To(gomega.HaveKeyWithValue("grpc.status_code", "ABORTED"))
-			gomega.Expect(spans[0].Tags).To(gomega.HaveKeyWithValue(string(zipkin.TagError), "ABORTED"))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveLen(2))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveKeyWithValue("grpc.status_code", "ABORTED"))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveKeyWithValue(string(zipkin.TagError), "ABORTED"))
 		})
 
 		ginkgo.It("copies existing metadata", func() {

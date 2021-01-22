@@ -19,8 +19,8 @@ import (
 	"errors"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	zipkinmodel "github.com/openzipkin/zipkin-go/model"
+	"google.golang.org/protobuf/proto"
 )
 
 var errNilProtoSpan = errors.New("expecting a non-nil Span")
@@ -78,7 +78,7 @@ func modelSpanToProtoSpan(sm *zipkinmodel.SpanModel) (*Span, error) {
 		Kind:           Span_Kind(Span_Kind_value[string(sm.Kind)]),
 		Name:           sm.Name,
 		Timestamp:      timeStamp,
-		Tags:           sm.Tags,
+		Tags:           sm.Tags().ToMap(),
 		Duration:       uint64(sm.Duration.Nanoseconds() / 1e3),
 		LocalEndpoint:  modelEndpointToProtoEndpoint(sm.LocalEndpoint),
 		RemoteEndpoint: modelEndpointToProtoEndpoint(sm.RemoteEndpoint),

@@ -135,7 +135,7 @@ func failSpan(t *testing.T, tr *Tracer, idx int, want error) string {
 
 	sp := tr.StartSpan("test", Parent(sc))
 	sp.Finish()
-	return sp.(*spanImpl).Tags["error.extract"]
+	return sp.(*spanImpl).Tags().Get("error.extract")
 }
 
 func TestTracerIDGeneratorOption(t *testing.T) {
@@ -424,10 +424,10 @@ func TestDefaultTags(t *testing.T) {
 	span := tr.StartSpan("test", Kind(model.Server), Parent(pSC))
 	span.Tag(scTagKey, scTagValue)
 
-	foundTags := span.(*spanImpl).Tags
+	foundTags := span.(*spanImpl).Tags()
 
 	for key, value := range tags {
-		foundValue, foundKey := foundTags[key]
+		foundValue, foundKey := foundTags.Load(key)
 		if !foundKey {
 			t.Errorf("Tag want %s=%s, have key not found", key, value)
 		} else if value != foundValue {
@@ -435,7 +435,7 @@ func TestDefaultTags(t *testing.T) {
 		}
 	}
 
-	foundValue, foundKey := foundTags[scTagKey]
+	foundValue, foundKey := foundTags.Load(scTagKey)
 	if !foundKey {
 		t.Errorf("Tag want %s=%s, have key not found", scTagKey, scTagValue)
 	} else if want, have := scTagValue, foundValue; want != have {
@@ -464,31 +464,31 @@ func TestTagOverwriteRules(t *testing.T) {
 
 	s.Tag(k1, v1First)
 
-	if want, have := v1First, s.(*spanImpl).Tags[k1]; want != have {
+	if want, have := v1First, s.(*spanImpl).Tags().Get(k1); want != have {
 		t.Errorf("Tag want %s=%s, have %s=%s", k1, want, k1, have)
 	}
 
 	s.Tag(k1, v1Last)
 
-	if want, have := v1Last, s.(*spanImpl).Tags[k1]; want != have {
+	if want, have := v1Last, s.(*spanImpl).Tags().Get(k1); want != have {
 		t.Errorf("Tag want %s=%s, have %s=%s", k1, want, k1, have)
 	}
 
 	s.Tag(k2, v1First)
 
-	if want, have := v1First, s.(*spanImpl).Tags[k2]; want != have {
+	if want, have := v1First, s.(*spanImpl).Tags().Get(k2); want != have {
 		t.Errorf("Tag want %s=%s, have %s=%s", k1, want, k1, have)
 	}
 
 	s.Tag(k2, v1Last)
 
-	if want, have := v1First, s.(*spanImpl).Tags[k2]; want != have {
+	if want, have := v1First, s.(*spanImpl).Tags().Get(k2); want != have {
 		t.Errorf("Tag want %s=%s, have %s=%s", k1, want, k1, have)
 	}
 
 	TagError.Set(s, v1Last)
 
-	if want, have := v1First, s.(*spanImpl).Tags[k2]; want != have {
+	if want, have := v1First, s.(*spanImpl).Tags().Get(k2); want != have {
 		t.Errorf("Tag want %s=%s, have %s=%s", k1, want, k1, have)
 	}
 }

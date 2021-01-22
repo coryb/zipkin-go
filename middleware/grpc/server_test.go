@@ -68,7 +68,7 @@ var _ = ginkgo.Describe("gRPC Server", func() {
 			// Set to local host for tests, might be IPv4 or IPv6 not worth checking the actual address.
 			gomega.Expect(span.RemoteEndpoint.Empty()).To(gomega.BeFalse())
 			gomega.Expect(span.Name).To(gomega.Equal("zipkin.testing.HelloService.Hello"))
-			gomega.Expect(span.Tags).To(gomega.BeEmpty())
+			gomega.Expect(span.Tags().ToMap()).To(gomega.BeEmpty())
 
 			spanCtx := resp.GetSpanContext()
 			gomega.Expect(spanCtx).To(gomega.HaveLen(2))
@@ -99,7 +99,7 @@ var _ = ginkgo.Describe("gRPC Server", func() {
 			gomega.Expect(span.Kind).To(gomega.Equal(model.Server))
 			gomega.Expect(span.RemoteEndpoint.Empty()).To(gomega.BeFalse())
 			gomega.Expect(span.Name).To(gomega.Equal("zipkin.testing.HelloService.Hello"))
-			gomega.Expect(span.Tags).To(gomega.BeEmpty())
+			gomega.Expect(span.Tags().ToMap()).To(gomega.BeEmpty())
 
 			spanCtx := resp.GetSpanContext()
 			gomega.Expect(spanCtx).To(gomega.HaveLen(3))
@@ -118,9 +118,9 @@ var _ = ginkgo.Describe("gRPC Server", func() {
 				return spans
 			}).Should(gomega.HaveLen(1))
 
-			gomega.Expect(spans[0].Tags).To(gomega.HaveLen(2))
-			gomega.Expect(spans[0].Tags).To(gomega.HaveKeyWithValue("grpc.status_code", "ABORTED"))
-			gomega.Expect(spans[0].Tags).To(gomega.HaveKeyWithValue(string(zipkin.TagError), "ABORTED"))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveLen(2))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveKeyWithValue("grpc.status_code", "ABORTED"))
+			gomega.Expect(spans[0].Tags().ToMap()).To(gomega.HaveKeyWithValue(string(zipkin.TagError), "ABORTED"))
 		})
 	})
 
@@ -145,8 +145,8 @@ var _ = ginkgo.Describe("gRPC Server", func() {
 
 			span := spans[0]
 			gomega.Expect(span.RemoteEndpoint.Empty()).To(gomega.BeFalse())
-			gomega.Expect(span.Tags).To(gomega.HaveLen(1))
-			gomega.Expect(span.Tags).To(gomega.HaveKeyWithValue("default", "tag"))
+			gomega.Expect(span.Tags().ToMap()).To(gomega.HaveLen(1))
+			gomega.Expect(span.Tags().ToMap()).To(gomega.HaveKeyWithValue("default", "tag"))
 
 			spanCtx := resp.GetSpanContext()
 			gomega.Expect(spanCtx).To(gomega.HaveLen(2))

@@ -91,7 +91,6 @@ func (t *Tracer) StartSpan(name string, options ...SpanOption) Span {
 			Name:          name,
 			LocalEndpoint: t.localEndpoint,
 			Annotations:   make([]model.Annotation, 0),
-			Tags:          make(map[string]string),
 		},
 		flushOnFinish: true,
 		tracer:        t,

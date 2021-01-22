@@ -31,10 +31,10 @@ func TestSpanJSON(t *testing.T) {
 		span2    SpanModel
 		parentID = ID(1003)
 		sampled  = true
-		tags     = make(map[string]string)
+		tags     = &SpanTags{}
 	)
-	tags["myKey"] = "myValue"
-	tags["another"] = "tag"
+	tags.Set("myKey", "myValue")
+	tags.Set("another", "tag")
 
 	span1 = SpanModel{
 		SpanContext: SpanContext{
@@ -62,7 +62,7 @@ func TestSpanJSON(t *testing.T) {
 		Annotations: []Annotation{
 			{time.Now().Add(-90 * time.Millisecond), "myAnnotation"},
 		},
-		Tags: tags,
+		tags: tags,
 	}
 
 	b, err := json.Marshal(&span1)
@@ -88,8 +88,14 @@ func TestSpanJSON(t *testing.T) {
 	span1.Name = strings.ToLower(span1.Name)
 	span1.LocalEndpoint.ServiceName = strings.ToLower(span1.LocalEndpoint.ServiceName)
 
+	tags1 := span1.Tags().ToMap()
+	tags2 := span2.Tags().ToMap()
+	span1.tags, span2.tags = nil, nil
 	if !reflect.DeepEqual(span1, span2) {
 		t.Errorf("want SpanModel: %+v, have: %+v", span1, span2)
+	}
+	if !reflect.DeepEqual(tags1, tags1) {
+		t.Errorf("want SpanModel Tags: %+v, have: %+v", tags1, tags2)
 	}
 }
 

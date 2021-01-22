@@ -41,7 +41,7 @@ func Parent(sc model.SpanContext) SpanOption {
 			case ExtractFailurePolicyError:
 				panic(s.SpanContext.Err)
 			case ExtractFailurePolicyTagAndRestart:
-				s.Tags["error.extract"] = sc.Err.Error()
+				s.Tags().Set("error.extract", sc.Err.Error())
 			default:
 				panic(ErrInvalidExtractFailurePolicy)
 			}
@@ -71,7 +71,7 @@ func RemoteEndpoint(e *model.Endpoint) SpanOption {
 func Tags(tags map[string]string) SpanOption {
 	return func(t *Tracer, s *spanImpl) {
 		for k, v := range tags {
-			s.Tags[k] = v
+			s.Tags().Set(k, v)
 		}
 	}
 }

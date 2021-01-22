@@ -104,7 +104,7 @@ func TestTagsSpanOption(t *testing.T) {
 		"key3": "value3",
 	}
 
-	if want, have := allTags, span.(*spanImpl).Tags; !reflect.DeepEqual(want, have) {
+	if want, have := allTags, span.(*spanImpl).Tags().ToMap(); !reflect.DeepEqual(want, have) {
 		t.Errorf("Tags want: %+v, have: %+v", want, have)
 	}
 }
@@ -144,7 +144,7 @@ func TestFlushOnFinishSpanOption(t *testing.T) {
 		t.Errorf("Spans want: %d, have %d", want, have)
 	}
 
-	if want, have := map[string]string{"post": "finish"}, spans[0].Tags; !reflect.DeepEqual(want, have) {
+	if want, have := map[string]string{"post": "finish"}, spans[0].Tags().ToMap(); !reflect.DeepEqual(want, have) {
 		t.Errorf("Tags want: %+v, have: %+v", want, have)
 	}
 
