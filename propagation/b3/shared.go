@@ -35,10 +35,10 @@ var (
 
 // Default B3 Header keys
 const (
-	TraceID      = "x-b3-traceid"
-	SpanID       = "x-b3-spanid"
-	ParentSpanID = "x-b3-parentspanid"
-	Sampled      = "x-b3-sampled"
-	Flags        = "x-b3-flags"
-	Context      = "b3"
+	TraceID      = "X-B3-Traceid"
+	SpanID       = "X-B3-Spanid"
+	ParentSpanID = "X-B3-Parentspanid"
+	Sampled      = "X-B3-Sampled"
+	Flags        = "X-B3-Flags"
+	Context      = "B3"
 )
