@@ -80,6 +80,8 @@ func (s *spanImpl) Finish() {
 	if atomic.CompareAndSwapInt32(&s.mustCollect, 1, 0) {
 		s.Duration = time.Since(s.Timestamp)
 		if s.flushOnFinish {
+			s.mtx.RLock()
+			defer s.mtx.RUnlock()
 			s.tracer.reporter.Send(s.SpanModel)
 		}
 	}
@@ -89,6 +91,8 @@ func (s *spanImpl) FinishedWithDuration(d time.Duration) {
 	if atomic.CompareAndSwapInt32(&s.mustCollect, 1, 0) {
 		s.Duration = d
 		if s.flushOnFinish {
+			s.mtx.RLock()
+			defer s.mtx.RUnlock()
 			s.tracer.reporter.Send(s.SpanModel)
 		}
 	}
@@ -96,6 +100,8 @@ func (s *spanImpl) FinishedWithDuration(d time.Duration) {
 
 func (s *spanImpl) Flush() {
 	if s.SpanModel.Debug || (s.SpanModel.Sampled != nil && *s.SpanModel.Sampled) {
+		s.mtx.RLock()
+		defer s.mtx.RUnlock()
 		s.tracer.reporter.Send(s.SpanModel)
 	}
 }
